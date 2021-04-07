@@ -1,3 +1,5 @@
+#!/usr/bin/env python3
+
 import evdev
 import ev3dev2.auto as ev3
 import threading
@@ -53,15 +55,19 @@ for device in devices:
         ps3dev = device.fn
 
 # Initialize the controller
-gamepad = evdev.InputDevice(ps3dev)
+try:
+    gamepad = evdev.InputDevice(ps3dev)
+except:
+    print("No Controller Connected")
 
 # Initialize the Variables
 speed = 0
 turn = 0
 steer_lock = False
 running = True
-precision = True
+precision = False
 maxTurn = 55
+stop = False
 
 class MotorThread(threading.Thread): # This is the thread that will control the motors
     def __init__(self):
@@ -141,5 +147,11 @@ for event in gamepad.read_loop():   # Event loop
 
     if event.type == 1 and event.code == 304 and event.value == 1:  # Digital value
         print("X button is pressed. Stopping.")
-        running = False
-        break
+        stop = True
+        # running = False
+        # break
+
+    if event.type == 1 and event.code == 307 and event.value == 1:  # Digital value
+        if stop:
+            running = False
+            break
